@@ -6,10 +6,10 @@ import 'package:shop_app/models/http_exception.dart';
 class Auth with ChangeNotifier {
   String? _token;
   DateTime? _expiryDate;
-  String? _userId;
+  String? _userid;
 
   bool get isAuth {
-    return _token != null;
+    return token != null;
   }
 
   String get token {
@@ -21,11 +21,11 @@ class Auth with ChangeNotifier {
     return null!;
   }
 
-  Future<void> _authenticate(
-      String email, String password, String urlSegment) async {
+
+  Future<void> _authenticate(String email, String password, String urlSegment) async{
     final url = Uri.parse(
-        'https://identitytoolkit.googleapis.com/v1/accounts:$urlSegment?key=AIzaSyAOfGCUP9JZ4h_XgTIPpsl5j-sPKEE3OaU');
-    try {
+        'https://identitytoolkit.googleapis.com/v1/$urlSegment?key=AIzaSyAOfGCUP9JZ4h_XgTIPpsl5j-sPKEE3OaU');
+    try{
       final response = await http.post(
         url,
         body: json.encode(
@@ -37,29 +37,20 @@ class Auth with ChangeNotifier {
         ),
       );
       final responseData = json.decode(response.body);
-      if (responseData['error'] != null) {
+      if (responseData['error'] != null){
         throw HttpException(responseData['error']['message']);
       }
-      _token = responseData['idToken'];
-      _userId = responseData['localId'];
-      _expiryDate = DateTime.now().add(
-        Duration(
-          seconds: int.parse(
-            responseData['expiresIn'],
-          ),
-        ),
-      );
-      notifyListeners();
-    } catch (error) {
+    }catch(error) {
       throw error;
     }
   }
 
+
   Future<void> signup(String email, String password) async {
-    return _authenticate(email, password, 'signUp');
+   return _authenticate(email, password, 'accounts:signUp');
   }
 
   Future<void> login(String email, String password) async {
-    return _authenticate(email, password, 'signInWithPassword');
+    return _authenticate(email, password, 'accounts:signInWithPassword');
   }
 }
